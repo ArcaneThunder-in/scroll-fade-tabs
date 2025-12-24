@@ -16,16 +16,24 @@ const ScrollContainer = ({ sections }: ScrollContainerProps) => {
   const [activeSection, setActiveSection] = useState(sections[0]?.id || "");
   const [scrollProgress, setScrollProgress] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
-  const scrollAreaRef = useRef<HTMLDivElement>(null);
 
   const tabs = sections.map((s) => ({ id: s.id, label: s.label }));
 
   const handleScroll = useCallback(() => {
-    if (!scrollAreaRef.current) return;
+    if (!containerRef.current) return;
 
-    const { scrollTop, scrollHeight, clientHeight } = scrollAreaRef.current;
-    const maxScroll = scrollHeight - clientHeight;
-    const progress = maxScroll > 0 ? scrollTop / maxScroll : 0;
+    const rect = containerRef.current.getBoundingClientRect();
+    const parentScrollArea = containerRef.current.closest('main');
+    if (!parentScrollArea) return;
+
+    // Calculate progress based on how far we've scrolled through the container's scroll range
+    const scrollTop = window.scrollY;
+    const containerTop = containerRef.current.offsetTop;
+    const containerHeight = containerRef.current.offsetHeight;
+    const scrollableHeight = containerHeight * (sections.length - 1);
+    
+    const relativeScroll = scrollTop - containerTop;
+    const progress = Math.max(0, Math.min(1, relativeScroll / scrollableHeight));
     
     setScrollProgress(progress);
 
@@ -43,28 +51,26 @@ const ScrollContainer = ({ sections }: ScrollContainerProps) => {
 
   const handleTabClick = (id: string) => {
     const index = sections.findIndex((s) => s.id === id);
-    if (index === -1 || !scrollAreaRef.current) return;
+    if (index === -1 || !containerRef.current) return;
 
-    const { scrollHeight, clientHeight } = scrollAreaRef.current;
-    const maxScroll = scrollHeight - clientHeight;
-    const targetScroll = (index / sections.length) * maxScroll;
+    const containerTop = containerRef.current.offsetTop;
+    const containerHeight = containerRef.current.offsetHeight;
+    const scrollableHeight = containerHeight * (sections.length - 1);
+    const targetScroll = containerTop + (index / sections.length) * scrollableHeight;
 
-    scrollAreaRef.current.scrollTo({
+    window.scrollTo({
       top: targetScroll,
       behavior: "smooth",
     });
   };
 
   useEffect(() => {
-    const scrollArea = scrollAreaRef.current;
-    if (!scrollArea) return;
-
-    scrollArea.addEventListener("scroll", handleScroll, { passive: true });
-    return () => scrollArea.removeEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
   }, [handleScroll]);
 
   return (
-    <div ref={containerRef} className="flex flex-col h-screen overflow-hidden bg-background">
+    <div ref={containerRef} className="sticky top-0 flex flex-col h-screen overflow-hidden bg-background">
       <ScrollTabs tabs={tabs} activeTab={activeSection} onTabClick={handleTabClick} />
       
       {/* Progress indicator */}
@@ -75,30 +81,17 @@ const ScrollContainer = ({ sections }: ScrollContainerProps) => {
         />
       </div>
 
-      {/* Scrollable area - this creates the scroll height */}
-      <div 
-        ref={scrollAreaRef}
-        className="flex-1 overflow-y-auto relative"
-      >
-        {/* Spacer content to create scroll height */}
-        <div style={{ height: `${sections.length * 100}vh` }} />
-        
-        {/* Fixed sections container */}
-        <div className="fixed inset-0 top-[73px] pointer-events-none">
-          <div className="relative w-full h-full">
-            {sections.map((section) => (
-              <ScrollSection
-                key={section.id}
-                id={section.id}
-                isActive={activeSection === section.id}
-              >
-                <div className="pointer-events-auto">
-                  {section.content}
-                </div>
-              </ScrollSection>
-            ))}
-          </div>
-        </div>
+      {/* Sections container */}
+      <div className="flex-1 relative">
+        {sections.map((section) => (
+          <ScrollSection
+            key={section.id}
+            id={section.id}
+            isActive={activeSection === section.id}
+          >
+            {section.content}
+          </ScrollSection>
+        ))}
       </div>
     </div>
   );

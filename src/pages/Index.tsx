@@ -26,36 +26,38 @@ const sections = [
       />
     ),
   },
-  {
-    id: "performance",
-    label: "Performance",
-    content: (
-      <SectionContent
-        title="Lightning Fast"
-        description="Built for speed without compromising quality. Our optimized architecture ensures blazing-fast load times and smooth interactions across all devices."
-        gradient="gradient-section-3"
-        icon="⚡"
-      />
-    ),
-  },
-  {
-    id: "security",
-    label: "Security",
-    content: (
-      <SectionContent
-        title="Enterprise Security"
-        description="Your data is protected with industry-leading security measures. We employ end-to-end encryption and rigorous security protocols to keep your information safe."
-        gradient="gradient-section-4"
-        icon="🔒"
-      />
-    ),
-  },
 ];
 
 const Index = () => {
   return (
-    <main className="min-h-screen">
-      <ScrollContainer sections={sections} />
+    <main className="min-h-screen bg-background">
+      {/* Static Header Section */}
+      <header className="py-16 px-4 text-center border-b border-border">
+        <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
+          Welcome to Our Platform
+        </h1>
+        <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          Explore our amazing features by scrolling through the sections below.
+        </p>
+      </header>
+
+      {/* Animated Scroll Section */}
+      <div className="h-[200vh]">
+        <ScrollContainer sections={sections} />
+      </div>
+
+      {/* Static Footer Section */}
+      <footer className="py-16 px-4 text-center border-t border-border bg-muted/30">
+        <h2 className="text-2xl font-semibold text-foreground mb-4">
+          Ready to Get Started?
+        </h2>
+        <p className="text-muted-foreground mb-6">
+          Join thousands of users who trust our platform.
+        </p>
+        <button className="px-8 py-3 bg-primary text-primary-foreground rounded-full font-medium hover:opacity-90 transition-opacity">
+          Get Started
+        </button>
+      </footer>
     </main>
   );
 };
