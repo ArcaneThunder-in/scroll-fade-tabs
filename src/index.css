@@ -127,4 +127,14 @@ All colors MUST be HSL.
   .gradient-section-4 {
     background: var(--gradient-section-4);
   }
+
+  .about_us_blur {
+    background: hsla(0, 0%, 100%, 0.7);
+    backdrop-filter: blur(20px);
+    border-radius: 16px;
+  }
+
+  .ff_poppins {
+    font-family: 'Poppins', 'Inter', system-ui, sans-serif;
+  }
 }
