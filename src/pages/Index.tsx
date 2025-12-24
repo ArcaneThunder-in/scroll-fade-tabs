@@ -30,9 +30,9 @@ const sections = [
 
 const Index = () => {
   return (
-    <main className="min-h-screen bg-background">
+    <main className="bg-background">
       {/* Static Header Section */}
-      <header className="py-16 px-4 text-center border-b border-border">
+      <header className="h-screen flex flex-col items-center justify-center px-4 text-center border-b border-border">
         <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
           Welcome to Our Platform
         </h1>
@@ -41,13 +41,13 @@ const Index = () => {
         </p>
       </header>
 
-      {/* Animated Scroll Section */}
-      <div className="h-[200vh]">
+      {/* Animated Scroll Section - height = 100vh per section */}
+      <div style={{ height: `${sections.length * 100}vh` }}>
         <ScrollContainer sections={sections} />
       </div>
 
       {/* Static Footer Section */}
-      <footer className="py-16 px-4 text-center border-t border-border bg-muted/30">
+      <footer className="h-screen flex flex-col items-center justify-center px-4 text-center border-t border-border bg-muted/30">
         <h2 className="text-2xl font-semibold text-foreground mb-4">
           Ready to Get Started?
         </h2>
