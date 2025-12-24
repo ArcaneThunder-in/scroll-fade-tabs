@@ -16,28 +16,27 @@ const ScrollContainer = ({ sections }: ScrollContainerProps) => {
   const [activeSection, setActiveSection] = useState(sections[0]?.id || "");
   const [scrollProgress, setScrollProgress] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
+  const wrapperRef = useRef<HTMLDivElement | null>(null);
 
   const tabs = sections.map((s) => ({ id: s.id, label: s.label }));
 
   const handleScroll = useCallback(() => {
-    if (!containerRef.current) return;
+    if (!wrapperRef.current) return;
 
-    const rect = containerRef.current.getBoundingClientRect();
-    const parentScrollArea = containerRef.current.closest('main');
-    if (!parentScrollArea) return;
-
-    // Calculate progress based on how far we've scrolled through the container's scroll range
-    const scrollTop = window.scrollY;
-    const containerTop = containerRef.current.offsetTop;
-    const containerHeight = containerRef.current.offsetHeight;
-    const scrollableHeight = containerHeight * (sections.length - 1);
+    const wrapper = wrapperRef.current;
+    const wrapperRect = wrapper.getBoundingClientRect();
+    const wrapperHeight = wrapper.offsetHeight;
+    const viewportHeight = window.innerHeight;
     
-    const relativeScroll = scrollTop - containerTop;
-    const progress = Math.max(0, Math.min(1, relativeScroll / scrollableHeight));
+    // Calculate how much we've scrolled through the wrapper
+    const scrolledIntoWrapper = -wrapperRect.top;
+    const scrollableDistance = wrapperHeight - viewportHeight;
+    
+    const progress = Math.max(0, Math.min(1, scrolledIntoWrapper / scrollableDistance));
     
     setScrollProgress(progress);
 
-    // Calculate which section should be active based on scroll position
+    // Calculate which section should be active
     const sectionIndex = Math.min(
       Math.floor(progress * sections.length),
       sections.length - 1
@@ -51,12 +50,15 @@ const ScrollContainer = ({ sections }: ScrollContainerProps) => {
 
   const handleTabClick = (id: string) => {
     const index = sections.findIndex((s) => s.id === id);
-    if (index === -1 || !containerRef.current) return;
+    if (index === -1 || !wrapperRef.current) return;
 
-    const containerTop = containerRef.current.offsetTop;
-    const containerHeight = containerRef.current.offsetHeight;
-    const scrollableHeight = containerHeight * (sections.length - 1);
-    const targetScroll = containerTop + (index / sections.length) * scrollableHeight;
+    const wrapper = wrapperRef.current;
+    const wrapperTop = wrapper.offsetTop;
+    const wrapperHeight = wrapper.offsetHeight;
+    const viewportHeight = window.innerHeight;
+    const scrollableDistance = wrapperHeight - viewportHeight;
+    
+    const targetScroll = wrapperTop + (index / (sections.length - 1 || 1)) * scrollableDistance;
 
     window.scrollTo({
       top: targetScroll,
@@ -65,7 +67,13 @@ const ScrollContainer = ({ sections }: ScrollContainerProps) => {
   };
 
   useEffect(() => {
+    // Find the parent wrapper div
+    if (containerRef.current) {
+      wrapperRef.current = containerRef.current.parentElement as HTMLDivElement;
+    }
+    
     window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll(); // Initial call
     return () => window.removeEventListener("scroll", handleScroll);
   }, [handleScroll]);
 
